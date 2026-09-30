@@ -164,6 +164,17 @@ def cmd_asar(args):
         ok, fail, skipped = asar.verify_integrity(args.archive, on_fail=on_fail)
         print("[+] 完整性校验：通过 %d，失败 %d，跳过 %d（无 integrity 字段）" % (ok, fail, skipped))
         return 1 if fail else 0
+    elif args.action == "info":
+        d = asar.info(args.archive, top=args.top)
+        print("归档：%s" % args.archive)
+        print("  条目数      : %d" % d["entries"])
+        print("  头部字节    : %d" % d["header_bytes"])
+        print("  内容总字节  : %d" % d["content_bytes"])
+        print("  扩展名分布  : %s" % ", ".join(
+            "%s=%d" % (k, v) for k, v in list(d["by_ext"].items())[:12]))
+        print("  最大的 %d 个：" % len(d["largest"]))
+        for size, path in d["largest"]:
+            print("    %10d  %s" % (size, path))
     return 0
 
 
@@ -214,12 +225,13 @@ def build_parser():
 
     # asar
     a = sub.add_parser("asar", help="Electron asar 归档读写")
-    a.add_argument("action", choices=["list", "extract", "cat", "pack", "verify"])
+    a.add_argument("action", choices=["list", "extract", "cat", "pack", "verify", "info"])
     a.add_argument("archive", nargs="?", help="asar 文件（list/extract/cat）")
     a.add_argument("src", nargs="?", help="源目录（pack）")
     a.add_argument("--dest", help="解包目标目录（extract）")
     a.add_argument("--entry", help="归档内路径（cat）")
     a.add_argument("--out", help="输出 asar 路径（pack）")
+    a.add_argument("--top", type=int, default=10, help="info 显示的最大文件个数")
     a.set_defaults(func=cmd_asar)
 
     # scan

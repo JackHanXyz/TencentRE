@@ -22,7 +22,7 @@ import os
 import struct
 
 __all__ = ["AsarError", "read_archive", "iter_entries", "list_files",
-           "extract_all", "extract_file", "pack", "read_file", "verify_integrity"]
+           "extract_all", "extract_file", "pack", "read_file", "info", "verify_integrity"]
 
 
 class AsarError(ValueError):
@@ -186,6 +186,32 @@ def pack(src_dir, out_archive):
     return len(entries)
 
 
+def info(archive, top=10):
+    """汇总归档概况：条目数、内容总字节、最大文件、扩展名分布。
+
+    返回 dict: {entries, content_bytes, header_bytes, by_ext, largest}
+    """
+    header, content_offset = read_archive(archive)
+    items = list(iter_entries(header))
+    by_ext = {}
+    largest = []
+    total = 0
+    for path, meta in items:
+        size = int(meta.get("size", 0))
+        total += size
+        ext = os.path.splitext(path)[1].lower() or "<none>"
+        by_ext[ext] = by_ext.get(ext, 0) + 1
+        largest.append((size, path))
+    largest.sort(reverse=True)
+    return {
+        "entries": len(items),
+        "content_bytes": total,
+        "header_bytes": content_offset - 8,
+        "by_ext": dict(sorted(by_ext.items(), key=lambda kv: (-kv[1], kv[0]))),
+        "largest": largest[:top],
+    }
+
+
 def verify_integrity(archive, on_fail=None):
     """按头部 integrity 字段校验每个条目的 SHA256。
 
@@ -194,13 +220,13 @@ def verify_integrity(archive, on_fail=None):
     header, content_offset = read_archive(archive)
     ok = fail = skipped = 0
     with open(archive, "rb") as f:
-        for path, info in iter_entries(header):
-            integ = info.get("integrity")
-            if not integ or "blocks" not in integ or info.get("unpacked"):
+        for path, meta in iter_entries(header):
+            integ = meta.get("integrity")
+            if not integ or "blocks" not in integ or meta.get("unpacked"):
                 skipped += 1
                 continue
-            f.seek(content_offset + int(info["offset"]))
-            raw = f.read(int(info["size"]))
+            f.seek(content_offset + int(meta["offset"]))
+            raw = f.read(int(meta["size"]))
             block_size = int(integ.get("blockSize", len(raw) or 1))
             blocks = integ["blocks"]
             good = True

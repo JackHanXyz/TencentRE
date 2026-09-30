@@ -9,6 +9,7 @@
 
 [![Python](https://img.shields.io/badge/python-%3E%3D3.6-3776AB.svg)](https://python.org)
 [![Deps](https://img.shields.io/badge/dependencies-none-success.svg)](#)
+[![tests](https://github.com/JackHanXyz/TencentRE/actions/workflows/tests.yml/badge.svg)](https://github.com/JackHanXyz/TencentRE/actions/workflows/tests.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > [!WARNING]
@@ -29,7 +30,7 @@
 ## 快速开始
 
 ```bash
-git clone <本仓库>
+git clone https://github.com/JackHanXyz/TencentRE.git
 cd TencentRE
 
 # 方式一：直接运行（无需安装）
@@ -124,6 +125,7 @@ python -m tencre asar list application.asar
 python -m tencre asar extract application.asar ./app_out
 python -m tencre asar cat application.asar path/to/file.json --out file.json
 python -m tencre asar pack ./app_out repacked.asar
+python -m tencre asar info application.asar
 python -m tencre asar verify application.asar
 ```
 

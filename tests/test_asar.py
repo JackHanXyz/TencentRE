@@ -61,6 +61,16 @@ class TestAsarRoundtrip(unittest.TestCase):
         got = asar.read_file(archive, "sub/deep/b.bin")
         self.assertEqual(got, files["sub/deep/b.bin"])
 
+    def test_info(self):
+        src, files = self._build_src()
+        archive = os.path.join(self.tmp, "out.asar")
+        asar.pack(src, archive)
+        d = asar.info(archive)
+        self.assertEqual(d["entries"], len(files))
+        self.assertEqual(d["content_bytes"], sum(len(v) for v in files.values()))
+        self.assertIn(".js", d["by_ext"])
+        self.assertTrue(d["largest"])
+
     def test_bad_magic(self):
         bad = os.path.join(self.tmp, "bad.asar")
         with open(bad, "wb") as f:
