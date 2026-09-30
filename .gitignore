@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+
+# 运行/演示产物
+build/demo/
+*.asar
+!tests/**/*.asar
+
+# 抓取与解密产物（含真实数据，切勿提交）
+*.dat
+out/
+decrypted/
