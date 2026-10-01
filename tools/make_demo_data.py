@@ -31,7 +31,17 @@ TREE = {
 }
 
 
+def _force_utf8_console():
+    import sys as _sys
+    for stream in (_sys.stdout, _sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
 def main(outdir):
+    _force_utf8_console()
     dat_dir = os.path.join(outdir, "wechat_dat")
     os.makedirs(dat_dir, exist_ok=True)
     for name, (plain, key) in SAMPLES.items():

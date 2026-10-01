@@ -245,9 +245,27 @@ def build_parser():
     return p
 
 
+def _force_utf8_console():
+    """把标准输出/错误切到 UTF-8，避免在 cp1252 等非 UTF-8 控制台打印中文时崩溃。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
 def main(argv=None):
+    _force_utf8_console()
     args = build_parser().parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except BrokenPipeError:
+        # 输出被下游（如 head）提前关闭，静默退出即可
+        try:
+            sys.stdout.close()
+        except Exception:
+            pass
+        return 0
 
 
 if __name__ == "__main__":
